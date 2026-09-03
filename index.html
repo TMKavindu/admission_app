@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2027 පළමු ශ්‍රේණියට සිසුන් ඇතුළත් කිරීම</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- html2pdf.js library for PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+    <!-- 1. INPUT FORM -->
+    <div class="container py-4" id="inputForm">
+        <div class="form-container">
+            <h3 class="text-center mb-4">2027 පළමු ශ්‍රේණියට සිසුන් ඇතුළත් කිරීම</h3>
+            <form id="dataForm">
+                <h5 class="text-primary">ප්‍රදේශයේ තොරතුරු</h5>
+                <div class="mb-3">
+                    <label class="form-label">ඡන්ද ප්‍රදේශය</label>
+                    <input type="text" class="form-control" id="electoralArea" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">ග්‍රාම නිළධාරි වසම හා අංකය</label>
+                    <input type="text" class="form-control" id="gnDivision" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">ඡන්ද කොට්ඨාසය</label>
+                    <input type="text" class="form-control" id="pollingBooth" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">ගම/ වීදිය/ වත්ත</label>
+                    <input type="text" class="form-control" id="village" required>
+                </div>
+
+                <hr>
+                <h5 class="text-primary">ඡන්ද හිමියන්ගේ තොරතුරු</h5>
+                <div id="studentsContainer">
+                    <div class="student-row border p-3 mb-3 rounded bg-light position-relative">
+                        <div class="row">
+                            <div class="col-6 mb-2"><label class="form-label">වර්ෂය</label><input type="text" class="form-control year" required></div>
+                            <div class="col-6 mb-2"><label class="form-label">ගෘහ අංකය</label><input type="text" class="form-control houseNo" required></div>
+                            <div class="col-12 mb-2"><label class="form-label">ලියාපදිංචි අංකය</label><input type="text" class="form-control regNo" required></div>
+                            <div class="col-12 mb-2"><label class="form-label">ඡන්ද හිමියාගේ නම</label><input type="text" class="form-control voterName" required></div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline-secondary w-100 mb-4" onclick="addStudent()">+ තවත් ඡන්ද හිමියෙකු එක් කරන්න</button>
+                
+                <div class="d-grid gap-2">
+                    <button type="button" id="previewBtn" class="btn btn-primary btn-lg">👁️ පෙරදසුන සහ බාගත කරන්න</button>
+                    <button type="button" class="btn btn-outline-danger" onclick="clearForm()">🗑️ ආකෘතිය හිස් කරන්න</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. PREVIEW & DOWNLOAD SECTION -->
+    <div class="container py-3" id="previewSection" style="display: none;">
+        <div class="d-flex justify-content-between mb-3 sticky-top bg-white p-2 shadow-sm rounded">
+            <button type="button" id="backBtn" class="btn btn-secondary">⬅️ ආපසු</button>
+            <div class="d-flex gap-2">
+                <button type="button" id="downloadPdfBtn" class="btn btn-success">📄 PDF බාගත කරන්න</button>
+                <button type="button" id="downloadDocBtn" class="btn btn-info text-white">📝 DOC බාගත කරන්න</button>
+            </div>
+        </div>
+        
+        <p class="text-center text-muted mb-3">මෙය ඔබගේ ලේඛනයේ පෙරදසුනයි. බාගත කිරීමට ඉහත බොත්තම් ඔබන්න.</p>
+
+        <!-- THE TEMPLATE -->
+        <div id="pdfTemplate">
+            <h2 style="text-align: center; font-size: 14pt; font-weight: bold; margin: 0 0 8px 0;">2027 පළමු ශ්‍රේණියට සිසුන් ඇතුළත් කිරීම</h2>
+            
+            <!-- Header Info Table -->
+            <table style="width: 98%; border: none; margin-bottom: 6px; font-size: 10pt; border-collapse: collapse;">
+                <tr>
+                    <td style="width: 38%; border: none; padding: 2px 0;">ඡන්ද ප්‍රදේශය</td>
+                    <td style="width: 4%; border: none; padding: 2px 0;">-</td>
+                    <td style="width: 58%; border: none; padding: 2px 0; border-bottom: 1px dotted #000;" id="pdfElectoralArea"></td>
+                </tr>
+                <tr>
+                    <td style="width: 38%; border: none; padding: 2px 0;">ග්‍රාම නිළධාරි වසම හා අංකය </td>
+                    <td style="width: 4%; border: none; padding: 2px 0;">-</td>
+                    <td style="width: 58%; border: none; padding: 2px 0; border-bottom: 1px dotted #000;" id="pdfGnDivision"></td>
+                </tr>
+                <tr>
+                    <td style="width: 38%; border: none; padding: 2px 0;">ඡන්ද කොට්ඨාසය </td>
+                    <td style="width: 4%; border: none; padding: 2px 0;">-</td>
+                    <td style="width: 58%; border: none; padding: 2px 0; border-bottom: 1px dotted #000;" id="pdfPollingBooth"></td>
+                </tr>
+                <tr>
+                    <td style="width: 38%; border: none; padding: 2px 0;">ගම/ වීදිය/ වත්ත </td>
+                    <td style="width: 4%; border: none; padding: 2px 0;">-</td>
+                    <td style="width: 58%; border: none; padding: 2px 0; border-bottom: 1px dotted #000;" id="pdfVillage"></td>
+                </tr>
+            </table>
+
+            <!-- Main Data Table -->
+            <table style="width: 98%; border-collapse: collapse; margin: 4px 0; font-size: 9.5pt; table-layout: fixed;">
+                <thead>
+                    <tr>
+                        <th style="width: 11%; border: 1px solid #000; padding: 4px 2px; text-align: center; background-color: #f8f9fa;">වර්ෂය</th>
+                        <th style="width: 15%; border: 1px solid #000; padding: 4px 2px; text-align: center; background-color: #f8f9fa;">ගෘහ අංකය</th>
+                        <th style="width: 15%; border: 1px solid #000; padding: 4px 2px; text-align: center; background-color: #f8f9fa;">ලියාපදිංචි අංකය</th>
+                        <th style="width: 59%; border: 1px solid #000; padding: 4px 2px; text-align: center; background-color: #f8f9fa;">ඡන්ද හිමියාගේ සම්පූර්ණ නම (දෙමාපිය/භාරකරු)</th>
+                    </tr>
+                </thead>
+                <tbody id="pdfStudentTable">
+                    <!-- Rows injected by JS -->
+                </tbody>
+            </table>
+
+            <!-- Footer Table (Corrected HTML Structure) -->
+            <table class="footer-table" style="width: 98%; border: none; margin-top: 8px; font-size: 9.5pt; border-collapse: collapse;">
+                <tr>
+                    <td colspan="4" style="border: none; padding: 3px 0;">
+                        ඉහත දත්ත තොරතුරු ඡන්ද හිමි නාම ලේඛන පරීක්ෂා කොට මවිසින් නිවැරදිව සටහන් කරගත් බව ප්‍රකාශ කරමි.
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 25%; border: none;"></td>
+                    <td style="width: 25%; border: none;"></td>
+                    <td style="width: 25%; border: none; padding: 20px 0 3px 0;">සකස් කළේ </td>
+                    <td style="width: 25%; border: none; padding: 2px 0; border-bottom: 1px dotted #000;">-&nbsp;</td>
+                </tr>
+                <tr>
+                    <td style="width: 25%; border: none;"></td>
+                    <td style="width: 25%; border: none;"></td>
+                    <td style="width: 25%; border: none; padding: 20px 0 3px 0;">පරීක්ෂා කළේ</td>
+                    <td style="width: 25%; border: none; padding: 2px 0; border-bottom: 1px dotted #000;">-&nbsp;</td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="border: none; padding: 18px 0 3px 0; text-align: center;">
+                        <span style="display: inline-block; width: 60%; border-bottom: 1px dotted #000; margin-bottom: 2px;">&nbsp;</span><br>
+                        ඉල්ලුම්කරුගේ අත්සන
+                    </td>
+                    <td style="width: 25%; border: none;"></td>
+                    <td style="width: 25%; border: none;"></td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="border: none; padding: 25px 0 4px 0; text-align: center;">
+                        ඉහත දත්ත තොරතුරු නිවැරදි බව සහතික කරමි.
+                    </td>
+                    <td style="width: 25%; border: none;"></td>
+                    <td style="width: 25%; border: none;"></td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="border: none; padding: 35px 0 4px  0; text-align: center;">
+                        <span style="display: inline-block; width: 80%; border-bottom: 1px dotted #000;">&nbsp;</span><br>
+                        කොට්ඨාස අධ්‍යාපන අධ්‍යක්ෂ - පඬුවස්නුවර
+                    </td>
+                    <td style="width: 25%; border: none;"></td>
+                    <td style="width: 25%; border: none;"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
