@@ -94,7 +94,7 @@ downloadPdfBtn.addEventListener('click', function() {
     downloadPdfBtn.disabled = true;
 
     const opt = {
-        margin:       [10, 10, 10, 10],
+        margin:       [8,8,8,8],
         filename:     filename,
         image:        { type: 'jpeg', quality: 0.95 },
         html2canvas:  { 
